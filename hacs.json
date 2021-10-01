@@ -1,0 +1,5 @@
+{
+    "name": "Tailwind iQ3",
+    "domains": ["cover"],
+    "iot_class": "local_polling"
+}

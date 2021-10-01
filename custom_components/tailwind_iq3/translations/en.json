@@ -1,0 +1,35 @@
+{
+    "title": "Tailwind iQ3",
+    "config": {
+        "flow_title": "{name}",
+        "abort": {
+            "no_devices_found": "No devices found on the network",
+            "single_instance_allowed": "Already configured. Only a single configuration possible.",
+            "already_configured": "This Tailwind iQ3 is already configured."
+        },
+        "step": {
+            "user": {
+                "title": "Configure Tailwind iQ3",
+                "data": {
+                    "name": "Name",
+                    "ip_address": "IP Address",
+                    "num_doors": "Number of Doors"
+                }
+            },
+            "confirm": {
+                "description": "Do you want to start set up?"
+            },
+            "discovery_confirm": {
+                "description": "Do you want to add the Tailwind iQ3 `{name}` to Home Assistant?",
+                "title": "Discovered Tailwind iQ3",
+                "data": {
+                    "name": "Name",
+                    "num_doors": "Number of Doors"
+                }
+            }
+        },
+        "error": {
+          "invalid_ip": "IP address is invalid (MAC address could not be determined). Please correct it and try again."
+        }
+    }
+}

@@ -1,0 +1,25 @@
+{
+  "domain": "tailwind_iq3",
+  "name": "Tailwind iQ3",
+  "version": "0.1.0",
+  "config_flow": true,
+  "documentation": "https://github.com/pauln/tailwind-home-assistant",
+  "issue_tracker": "https://github.com/pauln/tailwind-home-assistant/issues",
+  "requirements": ["scapy==2.4.5"],
+  "ssdp": [],
+  "zeroconf": [
+    {
+      "type": "_http._tcp.local.",
+      "name": "tw-webserver*"
+    }
+  ],
+  "homekit": {
+    "models": ["iQ3"]
+  },
+  "dependencies": [],
+  "after_dependencies": ["zeroconf"],
+  "codeowners": [
+    "@pauln"
+  ],
+  "iot_class": "local_polling"
+}

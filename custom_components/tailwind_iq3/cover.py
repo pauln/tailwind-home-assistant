@@ -7,7 +7,10 @@ from homeassistant.components.cover import (
     SUPPORT_OPEN,
     CoverEntity,
 )
-from homeassistant.const import CONF_IP_ADDRESS
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_API_TOKEN,
+)
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -94,12 +97,15 @@ class TailwindCover(CoordinatorEntity, CoverEntity):
             return
 
         ip_address = self._coordinator.config_entry.data[CONF_IP_ADDRESS]
+        api_token = self._coordinator.config_entry.data[CONF_API_TOKEN]
         command = 1 << self._device
         command = -1 * command
-        response = await tailwind_send_command(self._hass, ip_address, str(command))
-        if int(response) != command:
+        response = await tailwind_send_command(
+            self._hass, ip_address, api_token, str(command)
+        )
+        if response != "0" and int(response) != command:
             raise HomeAssistantError(
-                f"Closing of cover {self._device.name} failed with incorrect response: {response} (expected {command})"
+                f"Closing of cover {self._attr_name} failed with incorrect response: {response} (expected {command})"
             )
 
         # Write final state to HASS
@@ -115,11 +121,14 @@ class TailwindCover(CoordinatorEntity, CoverEntity):
             return
 
         ip_address = self._coordinator.config_entry.data[CONF_IP_ADDRESS]
+        api_token = self._coordinator.config_entry.data[CONF_API_TOKEN]
         command = 1 << self._device
-        response = await tailwind_send_command(self._hass, ip_address, str(command))
-        if int(response) != command:
+        response = await tailwind_send_command(
+            self._hass, ip_address, api_token, str(command)
+        )
+        if response != "0" and int(response) != command:
             raise HomeAssistantError(
-                f"Opening of cover {self._device.name} failed with incorrect response: {response} (expected {command})"
+                f"Opening of cover {self._attr_name} failed with incorrect response: {response} (expected {command})"
             )
 
         # Write final state to HASS

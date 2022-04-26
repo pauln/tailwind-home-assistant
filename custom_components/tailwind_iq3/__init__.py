@@ -5,7 +5,10 @@ from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_IP_ADDRESS
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_API_TOKEN,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -21,18 +24,20 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["cover"]
 
 
-async def tailwind_get_status(hass: HomeAssistant, ip_address: str) -> str:
+async def tailwind_get_status(hass: HomeAssistant, ip_address: str, api_token: str) -> str:
     websession = async_get_clientsession(hass)
-    async with websession.get(f"http://{ip_address}/status") as resp:
+    headers = {'TOKEN': api_token}
+    async with websession.get(f"http://{ip_address}/status", headers=headers) as resp:
         assert resp.status == 200
         return await resp.text()
 
 
 async def tailwind_send_command(
-    hass: HomeAssistant, ip_address: str, command: str
+    hass: HomeAssistant, ip_address: str, api_token: str, command: str
 ) -> str:
     websession = async_get_clientsession(hass)
-    async with websession.post(f"http://{ip_address}/cmd", data=command) as resp:
+    headers = {'TOKEN': api_token}
+    async with websession.post(f"http://{ip_address}/cmd", data=command, headers=headers) as resp:
         assert resp.status == 200
         return await resp.text()
 
@@ -46,7 +51,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             async with timeout(10):
                 ip_address = entry.data[CONF_IP_ADDRESS]
-                status = await tailwind_get_status(hass, ip_address)
+                api_token = entry.data[CONF_API_TOKEN]
+                status = await tailwind_get_status(hass, ip_address, api_token)
 
         except BaseException as error:
             raise UpdateFailed(error) from error

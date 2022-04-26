@@ -13,7 +13,8 @@
                 "data": {
                     "name": "Name",
                     "ip_address": "IP Address",
-                    "num_doors": "Number of Doors"
+                    "num_doors": "Number of Doors",
+                    "api_token": "Local Control Key"
                 }
             },
             "confirm": {
@@ -24,7 +25,8 @@
                 "title": "Discovered Tailwind iQ3",
                 "data": {
                     "name": "Name",
-                    "num_doors": "Number of Doors"
+                    "num_doors": "Number of Doors",
+                    "api_token": "Local Control Key"
                 }
             }
         },

@@ -8,6 +8,7 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
     CONF_IP_ADDRESS,
+    CONF_API_TOKEN,
 )
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.typing import DiscoveryInfoType
@@ -31,22 +32,25 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._name = "Tailwind iQ3"
         self._ip_address = None
         self._num_doors = 0
+        self._api_token = ""
 
-    async def async_step_user(self, info) -> FlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         errors = {}
-        if info is not None:
-            if info[CONF_NAME] != "":
-                self._name = info[CONF_NAME]
+        if user_input is not None:
+            if user_input[CONF_NAME] != "":
+                self._name = user_input[CONF_NAME]
 
             mac = None
             try:
-                ip_address = ipaddress.ip_address(info[CONF_IP_ADDRESS])
+                ip_address = ipaddress.ip_address(user_input[CONF_IP_ADDRESS])
             except ValueError:
                 # Invalid IP address specified.
                 pass
             else:
                 # IP address is valid.  Look up MAC address for unique ID.
-                mac = getmacbyip(info[CONF_IP_ADDRESS])
+                mac = getmacbyip(user_input[CONF_IP_ADDRESS])
 
             if ip_address is not None and mac is not None:
                 # MAC address retrieved.
@@ -58,7 +62,7 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 return self.async_create_entry(
                     title=self._name,
-                    data=info,
+                    data=user_input,
                 )
 
             errors["base"] = "invalid_ip"
@@ -78,6 +82,9 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_NUM_DOORS,
                         default=1,
                     ): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3)),
+                    vol.Required(
+                        CONF_API_TOKEN,
+                    ): str,
                 }
             ),
             errors=errors,
@@ -110,11 +117,13 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._name = user_input[CONF_NAME]
 
             self._num_doors = user_input[CONF_NUM_DOORS]
+            self._api_token = user_input[CONF_API_TOKEN]
 
             config_data = {
                 CONF_HOST: self._hostname,
                 CONF_IP_ADDRESS: self._ip_address,
                 CONF_NUM_DOORS: self._num_doors,
+                CONF_API_TOKEN: self._api_token,
             }
             return self.async_create_entry(
                 title=self._name,
@@ -134,6 +143,9 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_NUM_DOORS,
                         default=1,
                     ): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3)),
+                    vol.Required(
+                        CONF_API_TOKEN,
+                    ): str,
                 }
             ),
         )

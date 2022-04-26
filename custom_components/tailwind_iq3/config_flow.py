@@ -84,8 +84,8 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_homekit(self, discovery_info: DiscoveryInfoType) -> FlowResult:
-        self._ip_address = discovery_info[CONF_HOST]
-        self._hostname = discovery_info["hostname"].replace(".local.", "")
+        self._ip_address = discovery_info.host
+        self._hostname = discovery_info.hostname.replace(".local.", "")
         await self.async_set_unique_id(self._hostname)
         self._abort_if_unique_id_configured({CONF_HOST: self._hostname})
 
@@ -94,8 +94,8 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_zeroconf(
         self, discovery_info: DiscoveryInfoType
     ) -> FlowResult:
-        self._ip_address = discovery_info[CONF_HOST]
-        self._hostname = discovery_info["hostname"].replace(".local.", "")
+        self._ip_address = discovery_info.host
+        self._hostname = discovery_info.hostname.replace(".local.", "")
         await self.async_set_unique_id(self._hostname)
         self._abort_if_unique_id_configured({CONF_HOST: self._hostname})
 

@@ -5,7 +5,10 @@
   "config_flow": true,
   "documentation": "https://github.com/pauln/tailwind-home-assistant",
   "issue_tracker": "https://github.com/pauln/tailwind-home-assistant/issues",
-  "requirements": ["scapy==2.4.5"],
+  "requirements": [
+    "scapy==2.4.5; python_version<'3.10'",
+    "scapy==2.5.0; python_version>='3.10'"
+  ],
   "ssdp": [],
   "zeroconf": [
     {

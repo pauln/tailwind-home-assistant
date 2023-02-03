@@ -19,7 +19,7 @@ from homeassistant.helpers.update_coordinator import (
 from .const import DOMAIN, TAILWIND_COORDINATOR, UPDATE_INTERVAL, ATTR_RAW_STATE
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = ["cover"]
+PLATFORMS = ["binary_sensor", "cover"]
 
 
 async def tailwind_get_status(

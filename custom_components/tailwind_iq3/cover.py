@@ -14,7 +14,7 @@ from homeassistant.const import (
 from homeassistant.exceptions import HomeAssistantError
 
 from . import tailwind_send_command
-from .const import CONF_NUM_DOORS, DOMAIN, TAILWIND_COORDINATOR, ATTR_RAW_STATE
+from .const import CONF_NUM_DOORS, DOMAIN, TAILWIND_COORDINATOR
 from .entity import TailwindEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,40 +42,6 @@ class TailwindCover(TailwindEntity, CoverEntity):
         """Initialize with API object, device id."""
         super().__init__(coordinator, device)
         self._hass = hass
-
-    @property
-    def is_closed(self):
-        if self.coordinator.data is None:
-            return None
-
-        if self.coordinator.data[ATTR_RAW_STATE] == -1:
-            return None
-
-        return not self.is_open
-
-    @property
-    def is_closing(self):
-        """Return if the cover is closing or not."""
-        return False
-
-    @property
-    def is_open(self):
-        if self.coordinator.data is None:
-            return None
-
-        if self.coordinator.data[ATTR_RAW_STATE] == -1:
-            return None
-
-        raw_state = self.coordinator.data[ATTR_RAW_STATE]
-        bit_pos = 1 << self._device
-
-        """Return true if cover is open, else False."""
-        return raw_state & bit_pos
-
-    @property
-    def is_opening(self):
-        """Return if the cover is opening or not."""
-        return False
 
     async def async_close_cover(self, **kwargs):
         """Issue close command to cover."""

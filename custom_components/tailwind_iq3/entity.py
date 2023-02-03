@@ -4,7 +4,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN
+from .const import ATTR_RAW_STATE, DOMAIN
 
 
 class TailwindEntity(CoordinatorEntity):
@@ -36,3 +36,29 @@ class TailwindEntity(CoordinatorEntity):
             "tailwind-", ""
         )
         return f"{coordinator_id}_door_{self._device}"
+
+    @property
+    def is_closed(self) -> bool | None:
+        """Return if the cover is closed or not."""
+        return not self.is_open
+
+    @property
+    def is_closing(self) -> bool | None:
+        """Return if the cover is closing or not."""
+        return False
+
+    @property
+    def is_open(self) -> bool | None:
+        """Return true if cover is open, else False."""
+        raw_state = self.coordinator.data.get(ATTR_RAW_STATE, -1)
+        if raw_state == -1:
+            return None
+
+        bit_pos = 1 << self._device
+
+        return raw_state & bit_pos
+
+    @property
+    def is_opening(self) -> bool | None:
+        """Return if the cover is opening or not."""
+        return None

@@ -13,20 +13,26 @@ class TailwindEntity(CoordinatorEntity):
     def __init__(self, coordinator: DataUpdateCoordinator, device: DeviceEntry) -> None:
         super().__init__(coordinator)
         self._device = device
-        self._attr_unique_id = device.device_id
-
-    @property
-    def name(self):
-        return self._device.name
 
     @property
     def device_info(self):
-        device_info = {
-            "identifiers": {(DOMAIN, self._device.device_id)},
-            "name": self._device.name,
+        return {
+            "identifiers": {(DOMAIN, self.unique_id)},
+            "name": self.name,
             "manufacturer": "Tailwind",
             "model": "iQ3",
         }
-        if self._device.parent_device_id:
-            device_info["via_device"] = (DOMAIN, self._device.parent_device_id)
-        return device_info
+
+    @property
+    def name(self):
+        # Default name to match Tailwind app's default names.
+        door_letter = ["A", "B", "C"][self._device]
+        return f"Garage {door_letter}"
+
+    @property
+    def unique_id(self):
+        # Set unique ID based on device unique ID and door number.
+        coordinator_id = self.coordinator.config_entry.unique_id.replace(
+            "tailwind-", ""
+        )
+        return f"{coordinator_id}_door_{self._device}"

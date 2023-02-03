@@ -39,7 +39,7 @@ class TailwindEntity(CoordinatorEntity):
 
     @property
     def is_closed(self) -> bool | None:
-        """Return if the cover is closed or not."""
+        """Return true if cover is closed, else False."""
         return not self.is_open
 
     @property

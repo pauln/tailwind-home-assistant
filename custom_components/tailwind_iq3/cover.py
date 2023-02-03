@@ -7,11 +7,15 @@ from homeassistant.components.cover import (
     SUPPORT_OPEN,
     CoverEntity,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_IP_ADDRESS,
     CONF_API_TOKEN,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from . import tailwind_send_command
 from .const import CONF_NUM_DOORS, DOMAIN, TAILWIND_COORDINATOR
@@ -20,12 +24,12 @@ from .entity import TailwindEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities
+):
     """Set up cover entities."""
-    data = hass.data[DOMAIN][config_entry.entry_id]
-    conf = config_entry.data
-    coordinator = data[TAILWIND_COORDINATOR]
-    num_doors = conf[CONF_NUM_DOORS] if CONF_NUM_DOORS in conf else 1
+    coordinator = hass.data[DOMAIN][config_entry.entry_id][TAILWIND_COORDINATOR]
+    num_doors = config_entry.data.get(CONF_NUM_DOORS, 1)
 
     async_add_entities(
         [TailwindCover(hass, coordinator, device) for device in range(num_doors)]
@@ -38,7 +42,12 @@ class TailwindCover(TailwindEntity, CoverEntity):
     _attr_supported_features = SUPPORT_OPEN | SUPPORT_CLOSE
     _attr_device_class = DEVICE_CLASS_GARAGE
 
-    def __init__(self, hass, coordinator, device):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        coordinator: DataUpdateCoordinator,
+        device: DeviceEntry,
+    ):
         """Initialize with API object, device id."""
         super().__init__(coordinator, device)
         self._hass = hass

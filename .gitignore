@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore the home assistant config folder, generated when using a devcontainer
+config/

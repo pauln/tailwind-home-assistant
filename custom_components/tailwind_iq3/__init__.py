@@ -11,9 +11,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
 )
@@ -21,12 +19,14 @@ from homeassistant.helpers.update_coordinator import (
 from .const import DOMAIN, TAILWIND_COORDINATOR, UPDATE_INTERVAL, ATTR_RAW_STATE
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = ["cover"]
+PLATFORMS = ["binary_sensor", "cover"]
 
 
-async def tailwind_get_status(hass: HomeAssistant, ip_address: str, api_token: str) -> str:
+async def tailwind_get_status(
+    hass: HomeAssistant, ip_address: str, api_token: str
+) -> str:
     websession = async_get_clientsession(hass)
-    headers = {'TOKEN': api_token}
+    headers = {"TOKEN": api_token}
     async with websession.get(f"http://{ip_address}/status", headers=headers) as resp:
         assert resp.status == 200
         return await resp.text()
@@ -36,8 +36,10 @@ async def tailwind_send_command(
     hass: HomeAssistant, ip_address: str, api_token: str, command: str
 ) -> str:
     websession = async_get_clientsession(hass)
-    headers = {'TOKEN': api_token}
-    async with websession.post(f"http://{ip_address}/cmd", data=command, headers=headers) as resp:
+    headers = {"TOKEN": api_token}
+    async with websession.post(
+        f"http://{ip_address}/cmd", data=command, headers=headers
+    ) as resp:
         assert resp.status == 200
         return await resp.text()
 
@@ -86,28 +88,3 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
-
-
-class TailwindEntity(CoordinatorEntity):
-    """Base class for Tailwind iQ3 Entities."""
-
-    def __init__(self, coordinator: DataUpdateCoordinator, device: DeviceEntry) -> None:
-        super().__init__(coordinator)
-        self._device = device
-        self._attr_unique_id = device.device_id
-
-    @property
-    def name(self):
-        return self._device.name
-
-    @property
-    def device_info(self):
-        device_info = {
-            "identifiers": {(DOMAIN, self._device.device_id)},
-            "name": self._device.name,
-            "manufacturer": "Tailwind",
-            "model": "iQ3",
-        }
-        if self._device.parent_device_id:
-            device_info["via_device"] = (DOMAIN, self._device.parent_device_id)
-        return device_info

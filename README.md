@@ -22,7 +22,7 @@ After restarting Home Assistant, you should get a notification within Home Assis
 If your Tailwind iQ3 isn't automatically discovered (or you've "ignored" it), you can manually add the Tailwind iQ3 integration using the "Add Integration" button on the Integrations page in Home Assistant.  You'll need to enter the IP address of your iQ3 in addition to the number of doors and Local Control Key (and optional name) as part of the manual setup process.
 
 # Local Control Key
-In order to use the local control API which this integration relies on, it's necessary to obtain your Local Control Key (a 6-digit code) and enter it as part of the integration configuration.  To obtain your Local Control Key, ensure that you've updated your Tailwind iQ3 to the v9.95 firmare and then:
+In order to use the local control API which this integration relies on, it's necessary to obtain your Local Control Key (a 6-digit code) and enter it as part of the integration configuration.  To obtain your Local Control Key, ensure that you've updated your Tailwind iQ3 to the v9.95 firmware and then:
 
 1. Visit [Tailwind Web](https://web.gotailwind.com)
 2. Log in with your Tailwind account

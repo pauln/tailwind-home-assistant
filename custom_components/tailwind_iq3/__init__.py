@@ -17,31 +17,10 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .const import DOMAIN, TAILWIND_COORDINATOR, UPDATE_INTERVAL, ATTR_RAW_STATE
+from aiotailwind import Auth, TailwindController
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["binary_sensor", "cover"]
-
-
-async def tailwind_get_status(
-    hass: HomeAssistant, ip_address: str, api_token: str
-) -> str:
-    websession = async_get_clientsession(hass)
-    headers = {"TOKEN": api_token}
-    async with websession.get(f"http://{ip_address}/status", headers=headers) as resp:
-        assert resp.status == 200
-        return await resp.text()
-
-
-async def tailwind_send_command(
-    hass: HomeAssistant, ip_address: str, api_token: str, command: str
-) -> str:
-    websession = async_get_clientsession(hass)
-    headers = {"TOKEN": api_token}
-    async with websession.post(
-        f"http://{ip_address}/cmd", data=command, headers=headers
-    ) as resp:
-        assert resp.status == 200
-        return await resp.text()
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -49,18 +28,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     async def async_update_data():
-        status = -1
         try:
             async with timeout(10):
                 ip_address = entry.data[CONF_IP_ADDRESS]
                 api_token = entry.data[CONF_API_TOKEN]
-                status = await tailwind_get_status(hass, ip_address, api_token)
+                websession = async_get_clientsession(hass)
+                auth = Auth(websession, ip_address, api_token)
+                controller = TailwindController({}, auth)
+                await controller.async_update()
+                _LOGGER.debug("door status: " + ", ".join(["open" if door.is_open else "closed" for door in controller.doors]))
+                return {ATTR_RAW_STATE: controller.doors}
 
         except BaseException as error:
             raise UpdateFailed(error) from error
 
-        _LOGGER.debug("tailwind reported state: %s", status)
-        return {ATTR_RAW_STATE: int(status)}
 
     coordinator = DataUpdateCoordinator(
         hass,

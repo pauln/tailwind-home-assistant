@@ -6,7 +6,7 @@
   "documentation": "https://github.com/pauln/tailwind-home-assistant",
   "issue_tracker": "https://github.com/pauln/tailwind-home-assistant/issues",
   "requirements": [
-    "scapy>=2.4.5,<=2.5.0"
+    "aiotailwind>=0.1.0"
   ],
   "ssdp": [],
   "zeroconf": [

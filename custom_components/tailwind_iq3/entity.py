@@ -1,3 +1,5 @@
+import logging
+
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -6,6 +8,8 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import ATTR_RAW_STATE, DOMAIN
 
+
+_LOGGER = logging.getLogger(__name__)
 
 class TailwindEntity(CoordinatorEntity):
     """Base class for Tailwind iQ3 Entities."""
@@ -50,13 +54,11 @@ class TailwindEntity(CoordinatorEntity):
     @property
     def is_open(self) -> bool | None:
         """Return true if cover is open, else False."""
-        raw_state = self.coordinator.data.get(ATTR_RAW_STATE, -1)
-        if raw_state == -1:
+        raw_state = self.coordinator.data[ATTR_RAW_STATE]
+        if raw_state is None:
             return None
 
-        bit_pos = 1 << self._device
-
-        return raw_state & bit_pos
+        return raw_state[self._device].is_open
 
     @property
     def is_opening(self) -> bool | None:

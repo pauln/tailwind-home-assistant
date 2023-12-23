@@ -14,12 +14,13 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from . import tailwind_send_command
 from .const import CONF_NUM_DOORS, DOMAIN, TAILWIND_COORDINATOR
 from .entity import TailwindEntity
+from aiotailwind import Auth, TailwindController, TailwindError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,10 +30,14 @@ async def async_setup_entry(
 ):
     """Set up cover entities."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id][TAILWIND_COORDINATOR]
-    num_doors = config_entry.data.get(CONF_NUM_DOORS, 1)
+    config = config_entry.data
+    num_doors = config.get(CONF_NUM_DOORS, 1)
+    websession = async_get_clientsession(hass)
+    auth = Auth(websession, config[CONF_IP_ADDRESS], config[CONF_API_TOKEN])
+    controller = TailwindController({}, auth)
 
     async_add_entities(
-        [TailwindCover(hass, coordinator, device) for device in range(num_doors)]
+        [TailwindCover(coordinator, device, controller) for device in range(num_doors)]
     )
 
 
@@ -41,16 +46,17 @@ class TailwindCover(TailwindEntity, CoverEntity):
 
     _attr_supported_features = SUPPORT_OPEN | SUPPORT_CLOSE
     _attr_device_class = DEVICE_CLASS_GARAGE
+    _controller: TailwindController
 
     def __init__(
         self,
-        hass: HomeAssistant,
         coordinator: DataUpdateCoordinator,
         device: DeviceEntry,
+        controller: TailwindController,
     ):
         """Initialize with API object, device id."""
         super().__init__(coordinator, device)
-        self._hass = hass
+        self._controller = controller
 
     async def async_close_cover(self, **kwargs):
         """Issue close command to cover."""
@@ -61,16 +67,11 @@ class TailwindCover(TailwindEntity, CoverEntity):
         if self.coordinator.config_entry.data is None:
             return
 
-        ip_address = self.coordinator.config_entry.data[CONF_IP_ADDRESS]
-        api_token = self.coordinator.config_entry.data[CONF_API_TOKEN]
-        command = 1 << self._device
-        command = -1 * command
-        response = await tailwind_send_command(
-            self._hass, ip_address, api_token, str(command)
-        )
-        if response != "0" and int(response) != command:
+        try:
+            await self._controller.async_close_door(self._device)
+        except TailwindError as err:
             raise HomeAssistantError(
-                f"Closing of cover {self._attr_name} failed with incorrect response: {response} (expected {command})"
+                f"Closing of cover {self._attr_name} failed. {err}"
             )
 
         # Write final state to HASS
@@ -85,15 +86,11 @@ class TailwindCover(TailwindEntity, CoverEntity):
         if self.coordinator.config_entry.data is None:
             return
 
-        ip_address = self.coordinator.config_entry.data[CONF_IP_ADDRESS]
-        api_token = self.coordinator.config_entry.data[CONF_API_TOKEN]
-        command = 1 << self._device
-        response = await tailwind_send_command(
-            self._hass, ip_address, api_token, str(command)
-        )
-        if response != "0" and int(response) != command:
+        try:
+            await self._controller.async_open_door(self._device)
+        except TailwindError as err:
             raise HomeAssistantError(
-                f"Opening of cover {self._attr_name} failed with incorrect response: {response} (expected {command})"
+                f"Opening of cover {self._attr_name} failed. {err}"
             )
 
         # Write final state to HASS

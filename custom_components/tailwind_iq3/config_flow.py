@@ -11,13 +11,14 @@ from homeassistant.const import (
     CONF_API_TOKEN,
 )
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import DiscoveryInfoType
 
 import ipaddress
-from scapy.layers.l2 import getmacbyip
 import voluptuous as vol
 
 from .const import DOMAIN, CONF_NUM_DOORS
+from aiotailwind import Auth, TailwindController
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -42,20 +43,30 @@ class TailwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if user_input[CONF_NAME] != "":
                 self._name = user_input[CONF_NAME]
 
-            mac = None
+            flat_mac = None
             try:
                 ip_address = ipaddress.ip_address(user_input[CONF_IP_ADDRESS])
             except ValueError:
                 # Invalid IP address specified.
                 pass
             else:
-                # IP address is valid.  Look up MAC address for unique ID.
-                mac = getmacbyip(user_input[CONF_IP_ADDRESS])
+                # IP address is valid.  Ask the device for its unique ID.
+                try:
+                    websession = async_get_clientsession(self.hass)
+                    auth = Auth(websession, user_input[CONF_IP_ADDRESS], user_input[CONF_API_TOKEN])
+                    controller = TailwindController({}, auth)
+                    await controller.async_update()
+                    device_id = controller.id
+                    chunks = [f"0{chunk}" if len(chunk) == 1 else chunk for chunk in device_id.lower().split("_")]
+                    flat_mac = "".join(chunks)
+                except:
+                    # Invalid IP address, or otherwise unable to talk to the device.
+                    errors["base"] = "api_call_failed"
+                    pass
 
-            if ip_address is not None and mac is not None:
+            if ip_address is not None and flat_mac is not None:
                 # MAC address retrieved.
                 # Build a unique ID matching what would be autodiscovered.
-                flat_mac = mac.replace(":", "").lower()
                 self._hostname = f"tailwind-{flat_mac}"
                 await self.async_set_unique_id(self._hostname)
                 self._abort_if_unique_id_configured({CONF_HOST: self._hostname})

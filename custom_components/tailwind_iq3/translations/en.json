@@ -31,7 +31,8 @@
             }
         },
         "error": {
-          "invalid_ip": "IP address is invalid (MAC address could not be determined). Please correct it and try again."
+            "api_call_failed": "Failed to call device API.  Please check IP address and local control key and try again.",
+            "invalid_ip": "IP address is invalid (MAC address could not be determined). Please correct it and try again."
         }
     }
 }

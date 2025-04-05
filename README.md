@@ -1,6 +1,11 @@
 # tailwind-home-assistant
 Tailwind iQ3 integration for Home Assistant
 
+## Deprecated - use the core integration instead
+A Tailwind integration (not based on this custom integration) was added to Home Assistant in 2024.1; as such, this repository is no longer being updated.  New Tailwind users should use the core integration, and existing users of this custom integration should consider migrating if they haven't already.
+
+## Release notes
+
 **v0.2 of this component requires V9.95 of the Tailwind iQ3 firmware.**  This version has been officially released; please update via the Tailwind app.
 
 v0.1 of this component requires a beta firmware which has been superseded by the V9.95 release.  If you were previously using this version, you may need to delete the Tailwind integration and re-add it, as you will need to specify the Local Control Key (see below) during setup for correct operation.

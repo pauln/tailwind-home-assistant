@@ -2,9 +2,9 @@
 import logging
 
 from homeassistant.components.cover import (
-    DEVICE_CLASS_GARAGE,
-    SUPPORT_CLOSE,
-    SUPPORT_OPEN,
+    CoverDeviceClass.GARAGE,
+    CoverEntityFeature.CLOSE,
+    CoverEntityFeature.OPEN,
     CoverEntity,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -44,8 +44,8 @@ async def async_setup_entry(
 class TailwindCover(TailwindEntity, CoverEntity):
     """Representation of a Tailwind iQ3 cover."""
 
-    _attr_supported_features = SUPPORT_OPEN | SUPPORT_CLOSE
-    _attr_device_class = DEVICE_CLASS_GARAGE
+    _attr_supported_features = CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE
+    _attr_device_class = CoverDeviceClass.GARAGE
     _controller: TailwindController
 
     def __init__(
